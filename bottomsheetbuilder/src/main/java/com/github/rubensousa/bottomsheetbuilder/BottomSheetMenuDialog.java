@@ -23,13 +23,17 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.BottomSheetDialog;
 import android.support.design.widget.CoordinatorLayout;
+import android.view.KeyboardShortcutGroup;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewTreeObserver;
 import android.widget.FrameLayout;
 
 import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemClickListener;
+import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetModelItem;
 import com.github.rubensousa.bottomsheetbuilder.util.BottomSheetBuilderUtils;
+import java.util.List;
 
 public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSheetItemClickListener {
 
@@ -186,6 +190,25 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
         }
     }
 
+    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+        if (!mClicked) {
+
+            if (mBehavior != null) {
+                if (mDelayDismiss) {
+                    BottomSheetBuilderUtils.delayDismiss(mBehavior);
+                } else {
+                    mBehavior.setState(BottomSheetBehavior.STATE_HIDDEN);
+                }
+            }
+
+            if (mClickListener != null) {
+                mClickListener.onBottomSheetItemClick(item);
+            }
+
+            mClicked = true;
+        }
+    }
+
     private BottomSheetBehavior.BottomSheetCallback mBottomSheetCallback
             = new BottomSheetBehavior.BottomSheetCallback() {
         @Override
@@ -230,5 +253,10 @@ public class BottomSheetMenuDialog extends BottomSheetDialog implements BottomSh
                 = (CoordinatorLayout.LayoutParams) sheet.getLayoutParams();
         layoutParams.topMargin = mAppBarLayout.getHeight();
         sheet.setLayoutParams(layoutParams);
+    }
+
+    @Override public void onProvideKeyboardShortcuts(List<KeyboardShortcutGroup> data, Menu menu,
+        int deviceId) {
+
     }
 }

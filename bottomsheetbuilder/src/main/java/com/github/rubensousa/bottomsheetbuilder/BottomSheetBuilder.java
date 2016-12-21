@@ -37,12 +37,12 @@ import android.view.Menu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
-
 import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetAdapterBuilder;
 import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemClickListener;
+import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemViewHolder;
+import java.util.ArrayList;
 
-
-public class BottomSheetBuilder {
+public class BottomSheetBuilder<T> {
 
     public static final int MODE_LIST = 0;
     public static final int MODE_GRID = 1;
@@ -66,12 +66,17 @@ public class BottomSheetBuilder {
     private boolean mDelayedDismiss = true;
     private boolean mExpandOnStart = false;
     private int mIconTintColor = -1;
+
     private Menu mMenu;
+    private ArrayList<T> mDataItems;
+
     private BottomSheetAdapterBuilder mAdapterBuilder;
     private CoordinatorLayout mCoordinatorLayout;
     private AppBarLayout mAppBarLayout;
     private Context mContext;
     private BottomSheetItemClickListener mItemClickListener;
+
+    private BottomSheetItemViewHolder mCustomViewHolder;
 
     public BottomSheetBuilder(Context context, CoordinatorLayout coordinatorLayout) {
         mContext = context;
@@ -104,6 +109,10 @@ public class BottomSheetBuilder {
         mItemClickListener = listener;
         return this;
     }
+    public BottomSheetBuilder setViewHolderBinder(BottomSheetItemViewHolder viewHolder) {
+        mCustomViewHolder = viewHolder;
+        return this;
+    }
 
     public BottomSheetBuilder setMenu(@MenuRes int menu) {
         mMenu = new MenuBuilder(mContext);
@@ -114,6 +123,12 @@ public class BottomSheetBuilder {
     public BottomSheetBuilder setMenu(Menu menu) {
         mMenu = menu;
         mAdapterBuilder.setMenu(mMenu);
+        return this;
+    }
+
+    public BottomSheetBuilder<T> setItems(ArrayList<T> items) {
+        mDataItems = items;
+        mAdapterBuilder.setDataItems(mDataItems);
         return this;
     }
 
@@ -175,7 +190,7 @@ public class BottomSheetBuilder {
         return this;
     }
 
-    public BottomSheetBuilder setAppBarLayout(AppBarLayout appbar) {
+    public BottomSheetBuilder<T> setAppBarLayout(AppBarLayout appbar) {
         mAppBarLayout = appbar;
         return this;
     }
@@ -204,7 +219,7 @@ public class BottomSheetBuilder {
 
         View sheet = mAdapterBuilder.createView(mItemTextColor, mTitleTextColor,
                 mBackgroundDrawable, mBackgroundColor, mDividerBackground, mItemBackground,
-                mIconTintColor, mItemClickListener);
+                mIconTintColor, mItemClickListener, mCustomViewHolder);
 
         ViewCompat.setElevation(sheet, mContext.getResources()
                 .getDimensionPixelSize(R.dimen.bottomsheet_elevation));
@@ -232,7 +247,7 @@ public class BottomSheetBuilder {
 
     public BottomSheetMenuDialog createDialog() {
 
-        if (mMenu == null) {
+        if (mMenu == null && mDataItems == null) {
             throw new IllegalStateException("You need to provide at least one Menu" +
                     "or a Menu resource id");
         }
@@ -255,7 +270,7 @@ public class BottomSheetBuilder {
 
         View sheet = mAdapterBuilder.createView(mItemTextColor, mTitleTextColor,
                 mBackgroundDrawable, mBackgroundColor, mDividerBackground, mItemBackground,
-                mIconTintColor, dialog);
+                mIconTintColor, dialog, mCustomViewHolder);
 
         sheet.findViewById(R.id.fakeShadow).setVisibility(View.GONE);
         dialog.setAppBar(mAppBarLayout);

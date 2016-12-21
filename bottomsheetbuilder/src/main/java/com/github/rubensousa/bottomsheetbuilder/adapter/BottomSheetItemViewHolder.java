@@ -16,10 +16,9 @@
 
 package com.github.rubensousa.bottomsheetbuilder.adapter;
 
-import android.view.MenuItem;
+import android.widget.ImageView;
+import android.widget.TextView;
 
-public interface BottomSheetItemClickListener {
-    //void onBottomSheetItemClick(View mClickedView);
-    void onBottomSheetItemClick(MenuItem item);
-    void onBottomSheetItemClick(BottomSheetModelItem item);
+public interface BottomSheetItemViewHolder<G, T extends BottomSheetModelItem<G>> {
+    void bind(T item, final ImageView imageView, final TextView textView);
 }

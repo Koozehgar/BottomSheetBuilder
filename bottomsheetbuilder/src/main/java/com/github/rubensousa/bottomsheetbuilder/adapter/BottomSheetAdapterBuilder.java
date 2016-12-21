@@ -28,18 +28,17 @@ import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
-
 import com.github.rubensousa.bottomsheetbuilder.BottomSheetBuilder;
 import com.github.rubensousa.bottomsheetbuilder.R;
-
 import java.util.ArrayList;
 import java.util.List;
 
-public class BottomSheetAdapterBuilder {
+public class BottomSheetAdapterBuilder<T> {
 
     private int mTitles;
     private int mMode;
     private Menu mMenu;
+    private ArrayList<T> mDataItems;
     private Context mContext;
 
     public BottomSheetAdapterBuilder(Context context) {
@@ -50,6 +49,10 @@ public class BottomSheetAdapterBuilder {
         mMenu = menu;
     }
 
+    public void setDataItems(final ArrayList<T> items) {
+        mDataItems = items;
+    }
+
     public void setMode(int mode) {
         mMode = mode;
     }
@@ -57,7 +60,7 @@ public class BottomSheetAdapterBuilder {
     @SuppressLint("InflateParams")
     public View createView(int itemTextColor, int titleTextColor, int backgroundDrawable,
                            int backgroundColor, int dividerBackground, int itemBackground,
-                           int tintColor, BottomSheetItemClickListener itemClickListener) {
+                           int tintColor, BottomSheetItemClickListener itemClickListener, BottomSheetItemViewHolder mViewHolder) {
 
         LayoutInflater layoutInflater = LayoutInflater.from(mContext);
 
@@ -96,7 +99,7 @@ public class BottomSheetAdapterBuilder {
         }
 
         final BottomSheetItemAdapter adapter = new BottomSheetItemAdapter(items, mMode,
-                itemClickListener);
+                itemClickListener, mViewHolder);
 
         if (mMode == BottomSheetBuilder.MODE_LIST) {
             recyclerView.setLayoutManager(new LinearLayoutManager(mContext));
@@ -126,42 +129,50 @@ public class BottomSheetAdapterBuilder {
         List<BottomSheetItem> items = new ArrayList<>();
         mTitles = 0;
 
-        boolean addedSubMenu = false;
+        if (mMenu == null && mDataItems != null) {
+            for(int i = 0 ; i < mDataItems.size() ; i++) {
+                items.add(new BottomSheetModelItem<>(mDataItems.get(i), itemTextColor, itemBackground,tintColor));
+            }
+        } else {
+            boolean addedSubMenu = false;
 
-        for (int i = 0; i < mMenu.size(); i++) {
-            MenuItem item = mMenu.getItem(i);
+            for (int i = 0; i < mMenu.size(); i++) {
+                MenuItem item = mMenu.getItem(i);
 
-            if (item.isVisible()) {
-                if (item.hasSubMenu()) {
-                    SubMenu subMenu = item.getSubMenu();
+                if (item.isVisible()) {
+                    if (item.hasSubMenu()) {
+                        SubMenu subMenu = item.getSubMenu();
 
-                    if (i != 0 && addedSubMenu) {
-                        if (mMode == BottomSheetBuilder.MODE_GRID) {
-                            throw new IllegalArgumentException("MODE_GRID can't have submenus." +
+                        if (i != 0 && addedSubMenu) {
+                            if (mMode == BottomSheetBuilder.MODE_GRID) {
+                                throw new IllegalArgumentException("MODE_GRID can't have submenus." +
                                     " Use MODE_LIST instead");
+                            }
+                            items.add(new BottomSheetDivider(dividerBackground));
                         }
-                        items.add(new BottomSheetDivider(dividerBackground));
-                    }
 
-                    CharSequence title = item.getTitle();
-                    if (title != null && !title.equals("")) {
-                        items.add(new BottomSheetHeader(title.toString(), titleTextColor));
-                        mTitles++;
-                    }
+                        CharSequence title = item.getTitle();
+                        if (title != null && !title.equals("")) {
+                            items.add(new BottomSheetHeader(title.toString(), titleTextColor));
+                            mTitles++;
+                        }
 
-                    for (int j = 0; j < subMenu.size(); j++) {
-                        MenuItem subItem = subMenu.getItem(j);
-                        if (subItem.isVisible()) {
-                            items.add(new BottomSheetMenuItem(subItem, itemTextColor,
+                        for (int j = 0; j < subMenu.size(); j++) {
+                            MenuItem subItem = subMenu.getItem(j);
+                            if (subItem.isVisible()) {
+                                items.add(new BottomSheetMenuItem(subItem, itemTextColor,
                                     itemBackground, tintColor));
-                            addedSubMenu = true;
+                                addedSubMenu = true;
+                            }
                         }
+                    } else {
+                        items.add(new BottomSheetMenuItem(item, itemTextColor, itemBackground, tintColor));
                     }
-                } else {
-                    items.add(new BottomSheetMenuItem(item, itemTextColor, itemBackground, tintColor));
                 }
             }
         }
+
+
 
         return items;
     }

@@ -16,39 +16,36 @@
 
 package com.github.rubensousa.bottomsheetbuilder.adapter;
 
-import android.content.res.ColorStateList;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.AppCompatImageView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.TextView;
-
 import com.github.rubensousa.bottomsheetbuilder.BottomSheetBuilder;
 import com.github.rubensousa.bottomsheetbuilder.R;
-
 import java.util.List;
 
-
 class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter.ViewHolder> {
+
+
 
     public static final int TYPE_ITEM = 0;
     public static final int TYPE_HEADER = 1;
     public static final int TYPE_DIVIDER = 2;
+    public static final int TYPE_MODEL = 3;
 
     private List<BottomSheetItem> mItems;
     BottomSheetItemClickListener mListener;
     private int mMode;
     private int mItemWidth;
-
+    private BottomSheetItemViewHolder mViewHolderBinder;
     public BottomSheetItemAdapter(List<BottomSheetItem> items, int mode,
-                                  BottomSheetItemClickListener listener) {
+                                  BottomSheetItemClickListener listener,BottomSheetItemViewHolder mViewHolderBinder) {
         mMode = mode;
         mItems = items;
         mListener = listener;
+        this.mViewHolderBinder = mViewHolderBinder;
     }
 
     public void setItemWidth(int width) {
@@ -69,6 +66,8 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
             return TYPE_DIVIDER;
         } else if (item instanceof BottomSheetHeader) {
             return TYPE_HEADER;
+        } else if (item instanceof BottomSheetModelItem) {
+            return TYPE_MODEL;
         }
 
         return super.getItemViewType(position);
@@ -83,7 +82,13 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
             ViewGroup.LayoutParams layoutParams = layout.getLayoutParams();
             layoutParams.width = mItemWidth;
             layout.setLayoutParams(layoutParams);
-            return new ItemViewHolder(layout);
+
+            if (viewType == TYPE_MODEL) {
+                return new CustomItemViewHolder(layout);
+
+            } else {
+                return new ItemViewHolder(layout);
+            }
         }
 
         if (mMode == BottomSheetBuilder.MODE_LIST) {
@@ -109,8 +114,7 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
                 .inflate(R.layout.bottomsheetbuilder_list_adapter, parent, false));
     }
 
-    @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    @Override public void onBindViewHolder(ViewHolder holder, int position) {
         BottomSheetItem item = mItems.get(position);
 
         if (mMode == BottomSheetBuilder.MODE_LIST) {
@@ -122,7 +126,11 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
                 ((DividerViewHolder) holder).setData((BottomSheetDivider) item);
             }
         } else {
-            ((ItemViewHolder) holder).setData((BottomSheetMenuItem) item);
+            if (getItemViewType(position) == TYPE_MODEL) {
+                ((CustomItemViewHolder) holder).setData((BottomSheetModelItem) item);
+            } else {
+                ((ItemViewHolder) holder).setData((BottomSheetMenuItem) item);
+            }
         }
     }
 
@@ -210,6 +218,47 @@ class BottomSheetItemAdapter extends RecyclerView.Adapter<BottomSheetItemAdapter
 
             if (mListener != null) {
                 mListener.onBottomSheetItemClick(item.getMenuItem());
+            }
+        }
+    }
+    public class CustomItemViewHolder extends ViewHolder implements View.OnClickListener {
+
+        public AppCompatImageView imageView;
+        public TextView textView;
+
+        public CustomItemViewHolder(View itemView) {
+            super(itemView);
+            itemView.setOnClickListener(this);
+            imageView = (AppCompatImageView) itemView.findViewById(R.id.imageView);
+            textView = (TextView) itemView.findViewById(R.id.textView);
+        }
+
+        public void setData(BottomSheetModelItem item) {
+            //imageView.setImageDrawable(item.getIcon());
+            //textView.setText(item.getTitle());
+
+
+            mViewHolderBinder.bind(item, imageView, textView);
+
+            int color = item.getTextColor();
+            int background = item.getBackground();
+
+            if (color != 0) {
+                textView.setTextColor(color);
+            }
+
+            if (background != 0) {
+                itemView.setBackgroundResource(background);
+            }
+
+        }
+
+        @Override
+        public void onClick(View v) {
+            BottomSheetModelItem item = (BottomSheetModelItem) mItems.get(getLayoutPosition());
+
+            if (mListener != null) {
+                mListener.onBottomSheetItemClick(item);
             }
         }
     }

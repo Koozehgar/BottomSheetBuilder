@@ -7,21 +7,24 @@ import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.BottomSheetBehavior;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
-
-import com.github.rubensousa.bottomsheetbuilder.BottomSheetBuilder;
-import com.github.rubensousa.bottomsheetbuilder.BottomSheetMenuDialog;
-import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemClickListener;
-import com.github.rubensousa.bottomsheetbuilder.util.BottomSheetBuilderUtils;
-
+import android.widget.ImageView;
+import android.widget.TextView;
+import android.widget.Toast;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 import butterknife.OnClick;
+import com.github.rubensousa.bottomsheetbuilder.BottomSheetBuilder;
+import com.github.rubensousa.bottomsheetbuilder.BottomSheetMenuDialog;
+import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemClickListener;
+import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetItemViewHolder;
+import com.github.rubensousa.bottomsheetbuilder.adapter.BottomSheetModelItem;
+import com.github.rubensousa.bottomsheetbuilder.util.BottomSheetBuilderUtils;
+import java.util.ArrayList;
 
 public class MainActivity extends AppCompatActivity implements BottomSheetItemClickListener {
 
@@ -143,6 +146,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
                         Log.d("Item click", item.getTitle() + "");
                         mShowingSimpleDialog = false;
                     }
+
+                    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+
+                    }
                 })
                 .createDialog();
         mBottomSheetDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -173,6 +180,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
                         Log.d("Item click", item.getTitle() + "");
                         mShowingHeaderDialog = false;
                     }
+
+                    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+
+                    }
                 })
                 .createDialog();
         mBottomSheetDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
@@ -190,17 +201,40 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
         if (mBottomSheetDialog != null) {
             mBottomSheetDialog.dismiss();
         }
+        final ArrayList<String> items = new ArrayList<>();
+        items.add("Hello");
+        items.add("Hi");
+        items.add("Hey1");
+        items.add("Hey2");
+        items.add("Hey3");
+        items.add("Hey4");
         mShowingGridDialog = true;
-        mBottomSheetDialog = new BottomSheetBuilder(this, R.style.AppTheme_BottomSheetDialog)
+        mBottomSheetDialog = new BottomSheetBuilder<String>(this, R.style.AppTheme_BottomSheetDialog)
                 .setMode(BottomSheetBuilder.MODE_GRID)
                 .setAppBarLayout(appBarLayout)
-                .setMenu(getResources().getBoolean(R.bool.tablet_landscape)
-                        ? R.menu.menu_bottom_grid_tablet_sheet : R.menu.menu_bottom_grid_sheet)
+                .setItems(items)
+                .setViewHolderBinder(new BottomSheetItemViewHolder<String, BottomSheetModelItem<String>>() {
+                    @Override
+                    public void bind(BottomSheetModelItem<String> item, ImageView imageView,
+                        TextView textView) {
+                        textView.setText(item.item);
+                    }
+                })
+                //.setMenu(getResources().getBoolean(R.bool.tablet_landscape)
+                //        ? R.menu.menu_bottom_grid_tablet_sheet : R.menu.menu_bottom_grid_sheet)
                 .expandOnStart(true)
                 .setItemClickListener(new BottomSheetItemClickListener() {
                     @Override
                     public void onBottomSheetItemClick(MenuItem item) {
+                        Toast.makeText(MainActivity.this, "MenuItem", Toast.LENGTH_LONG).show();
                         Log.d("Item click", item.getTitle() + "");
+                        mShowingGridDialog = false;
+                    }
+
+                    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+                        Toast.makeText(MainActivity.this, "BottomSheetModelItem", Toast.LENGTH_LONG).show();
+
+                        Log.d("Item click", item.item + "");
                         mShowingGridDialog = false;
                     }
                 })
@@ -232,6 +266,10 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
                         Log.d("Item click", item.getTitle() + "");
                         mShowingLongDialog = false;
                     }
+
+                    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+
+                    }
                 })
                 .createDialog();
 
@@ -247,5 +285,9 @@ public class MainActivity extends AppCompatActivity implements BottomSheetItemCl
     @Override
     public void onBottomSheetItemClick(MenuItem item) {
         mBehavior.setState(BottomSheetBehavior.STATE_COLLAPSED);
+    }
+
+    @Override public void onBottomSheetItemClick(BottomSheetModelItem item) {
+
     }
 }
